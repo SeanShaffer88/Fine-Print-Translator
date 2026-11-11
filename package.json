@@ -1,0 +1,12 @@
+{
+  "name": "fine-print-translator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first reader that points to common terms in subscription agreements using deterministic rules.",
+  "license": "MIT",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node tools/check-corpus.mjs && node --test tests/*.test.mjs"
+  }
+}
