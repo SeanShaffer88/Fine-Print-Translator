@@ -6,7 +6,7 @@ It uses text extraction and transparent, deterministic rules—not generative AI
 
 ## Status
 
-Early product blueprint. Implementation details and supported formats are to be confirmed during development.
+Early development. A first slice of the text MVP exists: pasted text and `.txt` files are analyzed in the browser by rule set 0.1.0. PDF input, local saving, editing, and notes are not built yet.
 
 ## What it aims to detect
 
@@ -49,11 +49,11 @@ The exact platform and libraries should be selected after testing offline suppor
 
 ## Development status
 
-- [ ] Product scope and test corpus
+- [x] Product scope and test corpus (first draft; corpus is small and synthetic)
 - [ ] UX prototype
-- [ ] Text input and local extraction
-- [ ] Initial deterministic rules
-- [ ] Evidence-linked results
+- [ ] Text input and local extraction (pasted text and `.txt` done; PDF not started)
+- [x] Initial deterministic rules (v0.1.0, five categories; accuracy not yet measured)
+- [x] Evidence-linked results
 - [ ] Offline and data-flow verification
 - [ ] Private pilot
 - [ ] Optional on-device OCR
@@ -61,6 +61,25 @@ The exact platform and libraries should be selected after testing offline suppor
 See `workflow.md`, `features.md`, and `roadmap.md` for the product workflow, requirements, and staged plan.
 
 Phase 0 drafts (awaiting review): `docs/scope.md`, `docs/status-definitions.md`, `docs/data-flow.md`, and the annotated samples in `test-corpus/`.
+
+## Running it
+
+Requires Node.js 20 or later. There are no dependencies to install.
+
+```
+npm start    # serves the app at http://localhost:5173
+npm test     # checks corpus annotations, then runs rule and corpus tests
+```
+
+Layout:
+
+- `src/engine/` — section splitting, rules (`rules.js`), and analysis. No I/O, no DOM.
+- `src/ui/` — the browser interface and report export.
+- `tests/` — per-rule positive, negative, and ambiguous cases, plus corpus tests.
+- `tools/serve.mjs` — static file server for local use; it has no upload routes.
+
+The rules were written against the five corpus documents, so passing those tests shows the
+rules behave as intended on known examples. It is not a measure of accuracy on real documents.
 
 ## Trust and limitations
 

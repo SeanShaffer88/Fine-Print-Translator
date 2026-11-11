@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- connect-src 'none' blocks fetch/XHR/WebSocket: the page cannot send data anywhere. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Fine-Print Translator</title>
+  <link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <h1>Fine-Print Translator</h1>
+    <p>Finds wording about trials, renewal, price, cancellation and refunds in subscription terms, and shows you where it is.</p>
+    <p class="privacy"><strong>Documents are analyzed on this device.</strong> Nothing is uploaded or saved.</p>
+  </header>
+
+  <main id="main">
+    <section id="input" aria-labelledby="input-h">
+      <h2 id="input-h">Add a document</h2>
+      <label for="text">Paste text</label>
+      <textarea id="text" rows="10" spellcheck="false" aria-describedby="text-hint"></textarea>
+      <p id="text-hint" class="hint">Up to 1,000,000 characters.</p>
+      <div class="row">
+        <label for="file">Or choose a plain-text file (.txt, up to 2 MB)</label>
+        <input id="file" type="file" accept=".txt,text/plain">
+      </div>
+      <p class="hint">PDF files are not supported yet. Copy the text from the PDF and paste it above.</p>
+      <div class="row">
+        <button id="analyze" type="button" class="primary">Analyze</button>
+        <button id="sample" type="button">Try a sample</button>
+      </div>
+      <p id="message" role="alert"></p>
+    </section>
+
+    <section id="results" aria-labelledby="results-h" hidden>
+      <h2 id="results-h" tabindex="-1">Results</h2>
+      <p id="summary" role="status"></p>
+      <p class="notice">These are pointers to wording, not legal advice. A match does not tell you what a clause legally means, and exceptions may appear elsewhere in the document. Always read the original text.</p>
+      <div id="cards"></div>
+      <div class="row">
+        <button id="export" type="button">Export report</button>
+        <button id="discard" type="button">Discard document and results</button>
+      </div>
+      <p class="hint">An exported report is a file you save yourself. This app cannot delete it later.</p>
+    </section>
+
+    <section id="document" aria-labelledby="document-h" hidden>
+      <h2 id="document-h">Document</h2>
+      <p class="hint">Matched passages are outlined and marked with ▸.</p>
+      <div id="doc-text"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Rule set <span id="version"></span>. Deterministic rules, no AI. English-language consumer subscription terms only.</p>
+  </footer>
+  <script type="module" src="src/ui/app.js"></script>
+</body>
+</html>
