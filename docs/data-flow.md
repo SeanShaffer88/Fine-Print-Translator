@@ -54,4 +54,9 @@ flowchart TD
 - Automated test: no document text appears in console output or error messages.
 - Deletion test: after "Delete analysis", no record, text, or file copy remains in storage.
 
-These are planned controls. None is implemented or verified yet.
+Status:
+
+- Done: the Content-Security-Policy is set in `index.html` and sent as a header by `tools/serve.mjs`; pdf.js is served from the app's own origin and configured not to fetch fonts or character maps.
+- Done: PDF extraction errors carry only an error code (tested).
+- Checked by hand in headless Chromium, not yet automated: analysis of text, `.txt`, and PDF input made only same-origin GET requests for app code, and `fetch` from the page was blocked.
+- Not done: automated offline test, console-output test, and deletion test (no storage exists yet).

@@ -12,7 +12,9 @@
 // A match is a pointer to wording, not a legal conclusion.
 // Bump RULESET_VERSION whenever a pattern, rule, or extractor changes.
 
-export const RULESET_VERSION = '0.1.0';
+// 0.2.0: sentences are whitespace-normalized before matching; a line followed by a
+//        lower-case continuation is no longer treated as a heading.
+export const RULESET_VERSION = '0.2.0';
 
 export const CATEGORIES = [
   { id: 'trial', label: 'Trial and conversion' },
