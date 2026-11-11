@@ -1,0 +1,73 @@
+{
+  "document": "05-negated.txt",
+  "synthetic": true,
+  "annotated_by": "draft, not yet reviewed by a second person",
+  "purpose": "Explicit negation: terms stated as not applying. Must never be summarised as the affirmative.",
+  "categories": {
+    "trial": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "There is no free trial for the Season Pass.",
+          "start": 40,
+          "end": 83,
+          "polarity": "negated",
+          "note": "States there is no trial."
+        }
+      ]
+    },
+    "renewal": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "The Season Pass lasts for 12 months from the date of purchase and does not renew automatically.",
+          "start": 93,
+          "end": 188,
+          "polarity": "negated",
+          "note": "States a fixed term with no automatic renewal."
+        }
+      ]
+    },
+    "price": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "The Season Pass costs a one-time payment of $49.00.",
+          "start": 254,
+          "end": 305,
+          "polarity": "affirmed",
+          "note": "One-time amount; no billing interval."
+        }
+      ]
+    },
+    "cancellation": {
+      "expected_status": "possible",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "Because the pass does not renew, there is nothing to cancel.",
+          "start": 353,
+          "end": 413,
+          "polarity": "negated",
+          "note": "Mentions cancelling but gives no method or notice period."
+        }
+      ]
+    },
+    "refund": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "You may request a refund within 30 days of purchase if you have not downloaded any maps.",
+          "start": 478,
+          "end": 566,
+          "polarity": "affirmed",
+          "note": "Refund window with a condition."
+        }
+      ]
+    }
+  }
+}
