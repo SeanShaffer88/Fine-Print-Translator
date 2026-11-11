@@ -59,4 +59,6 @@ Status:
 - Done: the Content-Security-Policy is set in `index.html` and sent as a header by `tools/serve.mjs`; pdf.js is served from the app's own origin and configured not to fetch fonts or character maps.
 - Done: PDF extraction errors carry only an error code (tested).
 - Checked by hand in headless Chromium, not yet automated: analysis of text, `.txt`, and PDF input made only same-origin GET requests for app code, and `fetch` from the page was blocked.
-- Not done: automated offline test, console-output test, and deletion test (no storage exists yet).
+- Done: deletion is tested against the raw database: deleting an analysis removes its record, and "delete all" removes the database.
+- Checked by hand in headless Chromium: no database exists until the user saves, and none remains after "delete all".
+- Not done: automated offline test and console-output test.

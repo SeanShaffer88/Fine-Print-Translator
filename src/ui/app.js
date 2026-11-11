@@ -1,5 +1,8 @@
 import { analyzeText, RULESET_VERSION } from '../engine/analyze.js';
-import { STATUS, valueLines, matchExplanation, buildReport } from './report.js';
+import { VALUE_LABELS } from '../engine/rules.js';
+import { STATUS, matchExplanation, buildReport } from './report.js';
+import { MARKS, keyOf, effectiveValues, updateAnnotation, setValue } from './annotations.js';
+import { createStore } from '../storage/store.js';
 
 const MAX_CHARS = 1_000_000;
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
@@ -12,8 +15,12 @@ const el = (tag, props = {}, ...children) => {
   return node;
 };
 
-// Held in memory only. Nothing is written to storage or sent anywhere.
+// The open document lives in memory. It is written to this device's storage
+// only after the user presses "Save on this device". Nothing is sent anywhere.
 let state = null;
+let store = null;
+try { store = createStore(); } catch { /* saving is unavailable; the app still works */ }
+const STORAGE_PROBLEM = 'Saving is not available in this browser. You can still analyze and export.';
 
 const SAMPLE = `Example Music Membership Terms
 
@@ -41,12 +48,188 @@ function validate(text) {
   return null;
 }
 
+// ---- Saving -----------------------------------------------------------------
+
+const record = () => ({
+  id: state.id, name: state.name, date: state.date, savedAt: state.savedAt,
+  rulesetVersion: state.analysis.rulesetVersion, text: state.text, pages: state.pages,
+  incomplete: state.incomplete, note: state.note, analysis: state.analysis,
+  annotations: state.annotations,
+});
+
+let persistTimer = null;
+function persistSoon() {
+  if (!state?.id) return; // not saved: keep everything in memory only
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(persistNow, 400);
+}
+async function persistNow() {
+  clearTimeout(persistTimer);
+  if (!state?.id) return;
+  try { await store.save(record()); } catch { setMessage(STORAGE_PROBLEM); }
+}
+
+function annotate(key, patch) {
+  updateAnnotation(state.annotations, key, patch);
+  persistSoon();
+}
+
+function renderSaveState() {
+  const saved = !!state?.id;
+  $('save').textContent = saved ? 'Delete saved copy' : 'Save on this device';
+  $('save').disabled = !store;
+  $('discard').textContent = saved ? 'Close document' : 'Discard document and results';
+  $('save-status').textContent = !store ? STORAGE_PROBLEM
+    : saved
+      ? 'Saved on this device. Your notes and corrections are saved as you make them. The saved copy holds the document text and is not encrypted.'
+      : 'Not saved. Closing this page discards the document, results, and any notes.';
+}
+
+async function renderSavedList() {
+  let items = [];
+  try { items = store ? await store.list() : []; } catch { /* treated as nothing saved */ }
+  $('saved').hidden = !items.length;
+  $('saved-list').replaceChildren(...items.map((it) => {
+    const open = el('button', { type: 'button' }, 'Open');
+    open.setAttribute('aria-label', `Open ${it.name}`);
+    open.addEventListener('click', () => openSaved(it.id));
+    const del = el('button', { type: 'button' }, 'Delete');
+    del.setAttribute('aria-label', `Delete ${it.name}`);
+    del.addEventListener('click', () => deleteSaved(it.id, it.name));
+    return el('li', {},
+      el('span', { className: 'saved-name' }, it.name),
+      el('span', { className: 'hint' }, ` analyzed ${it.date}, rule set ${it.rulesetVersion} `),
+      open, del);
+  }));
+}
+
+async function toggleSave() {
+  if (!state || !store) return;
+  if (state.id) return deleteSaved(state.id, state.name);
+  state.id = crypto.randomUUID();
+  state.savedAt = Date.now();
+  try {
+    await store.save(record());
+  } catch {
+    state.id = null;
+    return setMessage(STORAGE_PROBLEM);
+  }
+  renderSaveState();
+  renderSavedList();
+}
+
+async function deleteSaved(id, name) {
+  if (!confirm(`Delete the saved analysis of “${name}” from this device? This removes its results, document text, notes, and corrections. Your original file and any exported reports are not affected.`)) return;
+  clearTimeout(persistTimer);
+  try { await store.remove(id); } catch { return setMessage(STORAGE_PROBLEM); }
+  if (state?.id === id) { state.id = null; renderSaveState(); }
+  await renderSavedList();
+  setMessage('Saved analysis deleted.');
+}
+
+async function deleteAll() {
+  if (!confirm('Delete all saved analyses from this device? This cannot be undone. Your original files and any exported reports are not affected.')) return;
+  clearTimeout(persistTimer);
+  try { await store.removeAll(); } catch { return setMessage(STORAGE_PROBLEM); }
+  if (state) { state.id = null; renderSaveState(); }
+  await renderSavedList();
+  setMessage('All saved analyses deleted.');
+}
+
+async function openSaved(id) {
+  await persistNow();
+  let r;
+  try { r = await store.get(id); } catch { return setMessage(STORAGE_PROBLEM); }
+  if (!r) { await renderSavedList(); return setMessage('That saved analysis no longer exists.'); }
+  state = {
+    id: r.id, savedAt: r.savedAt, name: r.name, date: r.date, text: r.text, pages: r.pages,
+    incomplete: r.incomplete, note: r.note ?? '', analysis: r.analysis,
+    annotations: r.annotations ?? {}, showHidden: {},
+  };
+  $('text').value = r.text;
+  setMessage('');
+  show();
+}
+
+function reanalyze() {
+  if (!state) return;
+  state.analysis = analyzeText(state.text, { pages: state.pages, incomplete: state.incomplete });
+  state.date = new Date().toISOString().slice(0, 10);
+  persistSoon();
+  show();
+  renderSavedList();
+}
+
+// ---- Results ----------------------------------------------------------------
+
+function renderMatch(c, m) {
+  const key = keyOf(c.category, m);
+  const ann = () => state.annotations[key] ?? {};
+  const uid = `${c.category}-${m.start}`;
+  const item = el('li', {});
+  const yourMark = el('span', { className: 'your-mark' });
+  const showMark = () => { yourMark.textContent = ann().mark ? ` · You marked this ${MARKS[ann().mark].toLowerCase()}` : ''; };
+  showMark();
+  item.append(
+    el('p', { className: 'match-status' },
+      `${STATUS[m.status].icon} ${STATUS[m.status].label}${m.page ? `, page ${m.page}` : ''}${m.section ? `, in section “${m.section}”` : ''}`,
+      yourMark),
+    el('blockquote', {}, m.excerpt),
+    el('p', { className: 'why' }, matchExplanation(m)),
+  );
+
+  for (const [field, value] of Object.entries(effectiveValues(m, ann()))) {
+    const input = el('input', { type: 'text', id: `v-${uid}-${field}`, value, maxLength: 60 });
+    const detected = el('span', { className: 'hint' });
+    const showDetected = () => {
+      detected.textContent = ann().values && field in ann().values ? ` Edited by you. Detected: ${m.values[field]}` : '';
+    };
+    showDetected();
+    input.addEventListener('input', () => {
+      setValue(state.annotations, key, m, field, input.value.trim());
+      persistSoon();
+      showDetected();
+    });
+    item.append(el('p', { className: 'value' },
+      el('label', { htmlFor: input.id }, `Candidate ${VALUE_LABELS[field].toLowerCase()} (not authoritative; you can correct it)`),
+      input, detected));
+  }
+
+  const link = el('a', { href: `#p-${m.start}` }, 'Show this passage in the document');
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = $(`p-${m.start}`);
+    target.scrollIntoView({ block: 'center' });
+    target.focus({ preventScroll: true });
+  });
+  item.append(el('p', {}, link));
+
+  const mark = el('select', { id: `m-${uid}` },
+    ...Object.entries(MARKS).map(([v, label]) => el('option', { value: v, selected: (ann().mark ?? '') === v }, label)));
+  mark.addEventListener('change', () => { annotate(key, { mark: mark.value }); showMark(); });
+  const note = el('textarea', { id: `n-${uid}`, rows: 2, maxLength: 2000, value: ann().note ?? '' });
+  note.addEventListener('input', () => annotate(key, { note: note.value }));
+  const hide = el('button', { type: 'button' }, ann().hidden ? 'Unhide this result' : 'Hide this result');
+  hide.addEventListener('click', () => {
+    annotate(key, { hidden: !ann().hidden });
+    renderCards();
+    $(`card-${c.category}`).focus();
+  });
+  const details = el('details', { open: !!(ann().note || ann().mark) },
+    el('summary', {}, 'Your mark and note'),
+    el('label', { htmlFor: mark.id }, 'Was this result useful?'), mark,
+    el('label', { htmlFor: note.id }, 'Your note'), note,
+    el('p', { className: 'hint' }, 'Marks, notes, and corrections are yours only. They do not change the rules or the detected status.'));
+  item.append(details, hide);
+  return item;
+}
+
 function renderCard(c) {
   const s = STATUS[c.status];
   const card = el('article', { className: `card status-${c.status}` });
   card.setAttribute('aria-labelledby', `card-${c.category}`);
   card.append(
-    el('h3', { id: `card-${c.category}` }, c.label),
+    el('h3', { id: `card-${c.category}`, tabIndex: -1 }, c.label),
     el('p', { className: 'status' },
       el('span', { className: 'icon', ariaHidden: 'true' }, s.icon),
       el('strong', {}, ` ${s.label}`),
@@ -57,29 +240,28 @@ function renderCard(c) {
     card.append(el('p', { className: 'review-reason' },
       `${r} The passages are shown below. None is treated as authoritative.`));
   }
-  if (c.matches.length) {
-    const list = el('ol', { className: 'matches' });
-    for (const m of c.matches) {
-      const item = el('li', {},
-        el('p', { className: 'match-status' },
-          `${STATUS[m.status].icon} ${STATUS[m.status].label}${m.page ? `, page ${m.page}` : ''}${m.section ? `, in section “${m.section}”` : ''}`),
-        el('blockquote', {}, m.excerpt),
-        el('p', { className: 'why' }, matchExplanation(m)),
-      );
-      for (const v of valueLines(m.values)) item.append(el('p', { className: 'value' }, v));
-      const link = el('a', { href: `#p-${m.start}` }, 'Show this passage in the document');
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = $(`p-${m.start}`);
-        target.scrollIntoView({ block: 'center' });
-        target.focus({ preventScroll: true });
-      });
-      item.append(link);
-      list.append(item);
-    }
-    card.append(list);
+  const isHidden = (m) => !!state.annotations[keyOf(c.category, m)]?.hidden;
+  const hiddenCount = c.matches.filter(isHidden).length;
+  const showing = !!state.showHidden[c.category];
+  const visible = c.matches.filter((m) => showing || !isHidden(m));
+  if (visible.length) {
+    card.append(el('ol', { className: 'matches' }, ...visible.map((m) => renderMatch(c, m))));
+  }
+  if (hiddenCount) {
+    const toggle = el('button', { type: 'button' }, showing ? 'Stop showing hidden results' : 'Show hidden results');
+    toggle.addEventListener('click', () => {
+      state.showHidden[c.category] = !showing;
+      renderCards();
+      $(`card-${c.category}`).focus();
+    });
+    card.append(el('p', { className: 'hint' },
+      `${hiddenCount} result${hiddenCount === 1 ? '' : 's'} hidden by you. Hiding does not change the status above. `, toggle));
   }
   return card;
+}
+
+function renderCards() {
+  $('cards').replaceChildren(...state.analysis.categories.map(renderCard));
 }
 
 function renderDocument(text, analysis) {
@@ -104,30 +286,48 @@ function renderDocument(text, analysis) {
   box.append(text.slice(pos));
 }
 
-function run(text, name, extraction = {}) {
+/** Renders the current state. */
+function show() {
+  const { analysis, note } = state;
+  $('extraction-note').textContent = note;
+  $('extraction-note').hidden = !note;
+  const stale = analysis.rulesetVersion !== RULESET_VERSION;
+  $('version-note').hidden = !stale;
+  $('version-text').textContent = stale
+    ? `These results were produced by rule set ${analysis.rulesetVersion}. The current rule set is ${RULESET_VERSION}. Results may differ if you analyze again; notes on passages that no longer match will not be shown.`
+    : '';
+  const count = (st) => analysis.categories.filter((c) => c.status === st).length;
+  $('summary').textContent = analysis.analyzable
+    ? `${state.name}: ${count('found')} found, ${count('possible')} possible, ${count('not_found')} not found, of ${analysis.categories.length} categories.`
+    : `Could not analyze: ${note ? 'no text could be read from this document.' : analysis.reason}`;
+  renderCards();
+  renderDocument(state.text, analysis);
+  renderSaveState();
+  $('results').hidden = false;
+  $('document').hidden = false;
+  $('results-h').focus();
+}
+
+async function run(text, name, extraction = {}) {
   const { pages, incomplete = false, note = '' } = extraction;
   if (!note) {
     const problem = validate(text);
     if (problem) return setMessage(problem);
   }
   setMessage('');
-  const analysis = analyzeText(text, { pages, incomplete });
-  state = { analysis, text, name, note, date: new Date().toISOString().slice(0, 10) };
-  $('extraction-note').textContent = note;
-  $('extraction-note').hidden = !note;
-
-  const count = (st) => analysis.categories.filter((c) => c.status === st).length;
-  $('summary').textContent = analysis.analyzable
-    ? `${count('found')} found, ${count('possible')} possible, ${count('not_found')} not found, of ${analysis.categories.length} categories.`
-    : `Could not analyze: ${note ? 'no text could be read from this document.' : analysis.reason}`;
-  $('cards').replaceChildren(...analysis.categories.map(renderCard));
-  renderDocument(text, analysis);
-  $('results').hidden = false;
-  $('document').hidden = false;
-  $('results-h').focus();
+  await persistNow(); // finish saving the previous document's notes, if it was saved
+  state = {
+    id: null, savedAt: null, name, text, pages, incomplete, note,
+    date: new Date().toISOString().slice(0, 10),
+    analysis: analyzeText(text, { pages, incomplete }),
+    annotations: {}, showHidden: {},
+  };
+  show();
 }
 
-function discard() {
+async function discard() {
+  const wasSaved = !!state?.id;
+  await persistNow();
   state = null;
   $('text').value = '';
   $('file').value = '';
@@ -135,13 +335,13 @@ function discard() {
   $('doc-text').replaceChildren();
   $('results').hidden = true;
   $('document').hidden = true;
-  setMessage('Document and results discarded.');
+  setMessage(wasSaved ? 'Document closed. The saved copy is still on this device.' : 'Document and results discarded.');
   $('text').focus();
 }
 
 function exportReport() {
   if (!state) return;
-  const blob = new Blob([buildReport(state.analysis, state.name, state.date, state.note)], { type: 'text/markdown' });
+  const blob = new Blob([buildReport(state.analysis, state)], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
   const a = el('a', { href: url, download: 'fine-print-report.md' });
   document.body.append(a);
@@ -223,6 +423,11 @@ $('analyze').addEventListener('click', () => run($('text').value, 'Pasted text')
 $('sample').addEventListener('click', () => { $('text').value = SAMPLE; run(SAMPLE, 'Built-in sample'); });
 $('discard').addEventListener('click', discard);
 $('export').addEventListener('click', exportReport);
+$('save').addEventListener('click', toggleSave);
+$('delete-all').addEventListener('click', deleteAll);
+$('reanalyze').addEventListener('click', reanalyze);
+// Flush pending note edits if the page is being hidden or closed.
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') persistNow(); });
 $('file').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -241,3 +446,4 @@ $('file').addEventListener('change', async (e) => {
   $('text').value = text;
   run(text, file.name);
 });
+renderSavedList();

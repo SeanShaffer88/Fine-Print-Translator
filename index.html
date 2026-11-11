@@ -15,10 +15,17 @@
   <header>
     <h1>Fine-Print Translator</h1>
     <p>Finds wording about trials, renewal, price, cancellation and refunds in subscription terms, and shows you where it is.</p>
-    <p class="privacy"><strong>Documents are analyzed on this device.</strong> Nothing is uploaded or saved.</p>
+    <p class="privacy"><strong>Documents are analyzed on this device.</strong> Nothing is uploaded. Nothing is saved unless you choose to save it.</p>
   </header>
 
   <main id="main">
+    <section id="saved" aria-labelledby="saved-h" hidden>
+      <h2 id="saved-h">Saved on this device</h2>
+      <ul id="saved-list"></ul>
+      <button id="delete-all" type="button">Delete all saved analyses</button>
+      <p class="hint">Deleting removes results, document text, notes, and corrections held by this app. It does not affect your original files or exported reports.</p>
+    </section>
+
     <section id="input" aria-labelledby="input-h">
       <h2 id="input-h">Add a document</h2>
       <label for="text">Paste text</label>
@@ -44,12 +51,18 @@
       <h2 id="results-h" tabindex="-1">Results</h2>
       <p id="summary" role="status"></p>
       <p id="extraction-note" class="review-reason" hidden></p>
+      <div id="version-note" class="review-reason" hidden>
+        <p id="version-text"></p>
+        <button id="reanalyze" type="button">Analyze again with the current rules</button>
+      </div>
       <p class="notice">These are pointers to wording, not legal advice. A match does not tell you what a clause legally means, and exceptions may appear elsewhere in the document. Always read the original text.</p>
       <div id="cards"></div>
       <div class="row">
         <button id="export" type="button">Export report</button>
+        <button id="save" type="button">Save on this device</button>
         <button id="discard" type="button">Discard document and results</button>
       </div>
+      <p id="save-status" class="hint" role="status"></p>
       <p class="hint">An exported report is a file you save yourself. This app cannot delete it later.</p>
     </section>
 
