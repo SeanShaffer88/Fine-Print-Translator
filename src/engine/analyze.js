@@ -44,11 +44,19 @@ function findConflicts(matches) {
 }
 
 /**
- * Analyzes plain text. Pure and deterministic: same text and rule set give the
+ * Analyzes plain text. Pure and deterministic: same input and rule set give the
  * same result. Performs no I/O and never logs.
+ *
+ * @param {string} text
+ * @param {{pages?: {number: number, start: number, end: number}[], incomplete?: boolean}} [opts]
+ *   pages: page spans within text, used to give each match a page number.
+ *   incomplete: true when part of the document could not be read. Categories
+ *   without a match are then "could not analyze", never "not found".
  */
-export function analyzeText(text) {
-  const base = { rulesetVersion: RULESET_VERSION, textLength: text.length };
+export function analyzeText(text, opts = {}) {
+  const { pages = [], incomplete = false } = opts;
+  const pageOf = (pos) => pages.find((p) => pos >= p.start && pos < p.end)?.number ?? null;
+  const base = { rulesetVersion: RULESET_VERSION, textLength: text.length, incomplete };
   if (!/[A-Za-z]{3}/.test(text)) {
     return {
       ...base,
@@ -67,8 +75,10 @@ export function analyzeText(text) {
 
   for (const unit of units) {
     const best = new Map(); // strongest match per category for this sentence
+    // Line breaks inside a sentence (hard-wrapped or PDF text) must not hide a phrase.
+    const sentence = unit.text.replace(/\s+/g, ' ');
     for (const rule of RULES) {
-      const r = evaluateRule(rule, unit.text);
+      const r = evaluateRule(rule, sentence);
       if (!r) continue;
       const prev = best.get(rule.category);
       if (!prev || RANK[r.status] > RANK[prev.status]) best.set(rule.category, r);
@@ -80,6 +90,7 @@ export function analyzeText(text) {
         end: unit.end,
         excerpt: unit.text,
         section: sections[unit.section].heading,
+        page: pageOf(unit.start),
       });
     }
   }
@@ -92,7 +103,7 @@ export function analyzeText(text) {
       const matches = byCategory.get(c.id);
       const status = matches.some((m) => m.status === 'found')
         ? 'found'
-        : matches.length ? 'possible' : 'not_found';
+        : matches.length ? 'possible' : incomplete ? 'could_not_analyze' : 'not_found';
       const reviewReasons = findConflicts(matches);
       return {
         category: c.id, label: c.label, status,

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- connect-src 'none' blocks fetch/XHR/WebSocket: the page cannot send data anywhere. -->
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+        content="default-src 'none'; script-src 'self'; worker-src 'self'; style-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
   <meta name="referrer" content="no-referrer">
   <title>Fine-Print Translator</title>
   <link rel="stylesheet" href="src/ui/styles.css">
@@ -25,13 +25,17 @@
       <textarea id="text" rows="10" spellcheck="false" aria-describedby="text-hint"></textarea>
       <p id="text-hint" class="hint">Up to 1,000,000 characters.</p>
       <div class="row">
-        <label for="file">Or choose a plain-text file (.txt, up to 2 MB)</label>
-        <input id="file" type="file" accept=".txt,text/plain">
+        <label for="file">Or choose a file (PDF up to 20 MB and 300 pages, or .txt up to 2 MB)</label>
+        <input id="file" type="file" accept=".pdf,application/pdf,.txt,text/plain">
       </div>
-      <p class="hint">PDF files are not supported yet. Copy the text from the PDF and paste it above.</p>
+      <p class="hint">PDFs must contain selectable text. Scanned or password-protected PDFs cannot be read.</p>
       <div class="row">
         <button id="analyze" type="button" class="primary">Analyze</button>
         <button id="sample" type="button">Try a sample</button>
+      </div>
+      <div id="progress" hidden>
+        <p id="progress-text" role="status"></p>
+        <button id="cancel" type="button">Cancel</button>
       </div>
       <p id="message" role="alert"></p>
     </section>
@@ -39,6 +43,7 @@
     <section id="results" aria-labelledby="results-h" hidden>
       <h2 id="results-h" tabindex="-1">Results</h2>
       <p id="summary" role="status"></p>
+      <p id="extraction-note" class="review-reason" hidden></p>
       <p class="notice">These are pointers to wording, not legal advice. A match does not tell you what a clause legally means, and exceptions may appear elsewhere in the document. Always read the original text.</p>
       <div id="cards"></div>
       <div class="row">

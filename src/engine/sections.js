@@ -4,12 +4,15 @@
 const NUMBERED = /^(\d+(\.\d+)*[.)]|(section|article|clause|part)\s+\d+)/i;
 const SENTENCE_END = /[.!?]["')\]]?\s+(?=["'(]?[A-Z0-9])/g;
 
-function isHeading(trimmed, prevBlank, nextHasText) {
+function isHeading(trimmed, prevBlank, next) {
   if (trimmed.length > 60 || trimmed.split(/\s+/).length > 8) return false;
   if (/[.!?;:,]$/.test(trimmed)) return false;
   if (!prevBlank) return false;
   const allCaps = /[A-Z]/.test(trimmed) && trimmed === trimmed.toUpperCase();
-  return nextHasText || allCaps || NUMBERED.test(trimmed);
+  // A following line that starts in lower case is a wrapped sentence, not body text
+  // under a heading (common in text extracted from PDFs).
+  if (next && /^[a-z]/.test(next)) return false;
+  return !!next || allCaps || NUMBERED.test(trimmed);
 }
 
 function readLines(text) {
@@ -70,8 +73,8 @@ export function splitText(text) {
   lines.forEach((line, i) => {
     if (!line.trimmed) return flush();
     const prevBlank = i === 0 || !lines[i - 1].trimmed;
-    const nextHasText = i + 1 < lines.length && !!lines[i + 1].trimmed;
-    if (isHeading(line.trimmed, prevBlank, nextHasText)) {
+    const next = i + 1 < lines.length ? lines[i + 1].trimmed : '';
+    if (isHeading(line.trimmed, prevBlank, next)) {
       flush();
       sections.push({ heading: line.trimmed, start: line.start, end: line.end });
     } else if (para) {

@@ -23,19 +23,20 @@ export function matchExplanation(m) {
 }
 
 /** Plain-text/Markdown report. Built locally; contains document excerpts. */
-export function buildReport(analysis, name, date) {
+export function buildReport(analysis, name, date, note = '') {
   const out = [
     '# Fine-Print Translator report', '',
     `Document: ${name}`, `Analyzed: ${date}`, `Rule set: ${analysis.rulesetVersion}`, '',
     'These are pointers to wording, not legal advice. Candidate values are not authoritative.',
     '"Not found" means no supported pattern was detected. It does not mean the document contains none.', '',
   ];
+  if (note) out.push(`Extraction: ${note}`, '');
   for (const c of analysis.categories) {
     const s = STATUS[c.status];
     out.push(`## ${c.label}: ${s.label}${c.reviewNeeded ? ' (Review needed)' : ''}`, '', s.text, '');
-    for (const r of c.reviewReasons) out.push(`Review needed: ${r} Neither passage is treated as authoritative.`, '');
+    for (const r of c.reviewReasons) out.push(`Review needed: ${r} No passage is treated as authoritative.`, '');
     for (const m of c.matches) {
-      out.push(`- ${STATUS[m.status].label}${m.section ? ` (section: ${m.section})` : ''}, characters ${m.start}-${m.end}`);
+      out.push(`- ${STATUS[m.status].label}${m.page ? `, page ${m.page}` : ''}${m.section ? ` (section: ${m.section})` : ''}, characters ${m.start}-${m.end}`);
       out.push(`  > ${m.excerpt.replace(/\s+/g, ' ')}`);
       out.push(`  ${matchExplanation(m)}`);
       for (const v of valueLines(m.values)) out.push(`  ${v}`);
