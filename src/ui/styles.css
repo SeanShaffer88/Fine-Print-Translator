@@ -34,3 +34,14 @@ mark { background: var(--soft); color: inherit; outline: 2px solid var(--accent)
 mark::before { content: "▸ "; font-weight: 700; }
 mark:focus { outline-width: 4px; }
 footer { margin-top: 2rem; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); }
+
+#saved-list { list-style: none; padding: 0; }
+#saved-list li { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+.saved-name { font-weight: 600; overflow-wrap: anywhere; }
+#saved-list button, .matches button, .hint button { padding: .2rem .6rem; font-size: .9rem; }
+.value label { margin: 0; font-weight: 600; }
+input[type="text"], select, details textarea { font: inherit; padding: .3rem .5rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); max-width: 100%; }
+.value input { display: block; width: 14rem; margin-top: .2rem; }
+details { margin: .5rem 0; } summary { cursor: pointer; font-weight: 600; }
+.your-mark { font-weight: 400; }
+#version-note button { margin-bottom: .5rem; }

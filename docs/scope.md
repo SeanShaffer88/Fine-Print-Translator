@@ -79,6 +79,11 @@ If the user turns on "Save analyses on this device":
 | Document name | Shown in the saved list |
 | Copy of the original file | Only if the user chooses to keep it |
 
+As built: saving is per analysis. Nothing is written until the user presses "Save on this
+device"; after that, notes and corrections to that analysis are saved as they are made.
+The app does **not** keep a copy of the original file, only the extracted text. Saved
+records are **not encrypted** (see open questions).
+
 Deletion:
 
 - **Delete analysis** removes the record, extracted text, notes, and any app-managed copy of the file.

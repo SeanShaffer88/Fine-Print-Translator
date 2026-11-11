@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Local-first reader that points to common terms in subscription agreements using deterministic rules.",
   "license": "MIT",
-  "engines": { "node": ">=20.19" },
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "postinstall": "node tools/vendor.mjs",
     "start": "node tools/serve.mjs",
@@ -13,5 +15,8 @@
   },
   "dependencies": {
     "pdfjs-dist": "6.5.438"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "6.2.8"
   }
 }
