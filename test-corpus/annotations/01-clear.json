@@ -1,0 +1,87 @@
+{
+  "document": "01-clear.txt",
+  "synthetic": true,
+  "annotated_by": "draft, not yet reviewed by a second person",
+  "purpose": "Clear, explicit wording in all five categories.",
+  "categories": {
+    "trial": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "At the end of the free trial, your membership will automatically convert to a paid subscription unless you cancel before the trial ends.",
+          "start": 86,
+          "end": 222,
+          "polarity": "affirmed",
+          "note": "Conversion wording. Trial length (14 days) is in the preceding sentence."
+        }
+      ]
+    },
+    "renewal": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "Your subscription will automatically renew for successive periods of one month until you cancel.",
+          "start": 235,
+          "end": 331,
+          "polarity": "affirmed",
+          "note": "Automatic renewal with a one-month period."
+        }
+      ]
+    },
+    "price": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "The subscription fee is $9.99 per month, charged to your payment method on each renewal date.",
+          "start": 351,
+          "end": 444,
+          "polarity": "affirmed",
+          "note": "Amount and billing interval."
+        },
+        {
+          "quote": "We may change the subscription fee by giving you at least 30 days' notice by email.",
+          "start": 445,
+          "end": 528,
+          "polarity": "affirmed",
+          "note": "Stated price-change term. Not a conflict with the fee passage."
+        }
+      ]
+    },
+    "cancellation": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "You may cancel at any time in Account Settings.",
+          "start": 546,
+          "end": 593,
+          "polarity": "affirmed",
+          "note": "Cancellation method."
+        },
+        {
+          "quote": "Cancellation takes effect at the end of the current billing period.",
+          "start": 594,
+          "end": 661,
+          "polarity": "affirmed",
+          "note": "Effective date of cancellation."
+        }
+      ]
+    },
+    "refund": {
+      "expected_status": "found",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "Payments are non-refundable, and we do not provide refunds for partially used billing periods.",
+          "start": 674,
+          "end": 768,
+          "polarity": "negated",
+          "note": "Refund term stating that refunds are not given."
+        }
+      ]
+    }
+  }
+}

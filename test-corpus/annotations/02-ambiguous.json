@@ -1,0 +1,73 @@
+{
+  "document": "02-ambiguous.txt",
+  "synthetic": true,
+  "annotated_by": "draft, not yet reviewed by a second person",
+  "purpose": "Vague wording: relevant language without clear values or commitments.",
+  "categories": {
+    "trial": {
+      "expected_status": "possible",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "Some plans may include an introductory period.",
+          "start": 49,
+          "end": 95,
+          "polarity": "affirmed",
+          "note": "May describe a trial; no length or conversion wording."
+        }
+      ]
+    },
+    "renewal": {
+      "expected_status": "possible",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "Your plan may continue after the initial term unless we hear from you.",
+          "start": 169,
+          "end": 239,
+          "polarity": "affirmed",
+          "note": "Suggests continuation; no \"renew\" wording and no period."
+        }
+      ]
+    },
+    "price": {
+      "expected_status": "possible",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "Fees are as displayed at checkout and may vary by region. Additional charges may apply.",
+          "start": 249,
+          "end": 336,
+          "polarity": "affirmed",
+          "note": "Mentions fees; no amount or interval."
+        }
+      ]
+    },
+    "cancellation": {
+      "expected_status": "possible",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "If you wish to stop using the service, please contact our team to discuss your options.",
+          "start": 355,
+          "end": 442,
+          "polarity": "affirmed",
+          "note": "May describe how to cancel; the word \"cancel\" is not used and no notice period is given."
+        }
+      ]
+    },
+    "refund": {
+      "expected_status": "possible",
+      "review_needed": false,
+      "passages": [
+        {
+          "quote": "Any reimbursement is at our sole discretion.",
+          "start": 455,
+          "end": 499,
+          "polarity": "affirmed",
+          "note": "May describe refunds; the word \"refund\" is not used."
+        }
+      ]
+    }
+  }
+}

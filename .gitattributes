@@ -1,0 +1,2 @@
+# Annotation offsets depend on exact characters; keep corpus text LF-only.
+test-corpus/documents/*.txt text eol=lf

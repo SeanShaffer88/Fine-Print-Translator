@@ -1,0 +1,94 @@
+{
+  "document": "03-contradictory.txt",
+  "synthetic": true,
+  "annotated_by": "draft, not yet reviewed by a second person",
+  "purpose": "Two passages per category that give different values. Neither is authoritative.",
+  "categories": {
+    "trial": {
+      "expected_status": "not_found",
+      "review_needed": false,
+      "note": "No trial wording in this document.",
+      "passages": []
+    },
+    "renewal": {
+      "expected_status": "found",
+      "review_needed": true,
+      "passages": [
+        {
+          "quote": "Your subscription renews automatically every month on your billing date.",
+          "start": 58,
+          "end": 130,
+          "polarity": "affirmed",
+          "note": "Monthly renewal."
+        },
+        {
+          "quote": "Subscriptions automatically renew for a further term of one year.",
+          "start": 492,
+          "end": 557,
+          "polarity": "affirmed",
+          "note": "Annual renewal. Differs from Section 2."
+        }
+      ]
+    },
+    "price": {
+      "expected_status": "found",
+      "review_needed": true,
+      "passages": [
+        {
+          "quote": "The price of PixelForge Pro is $15.00 per month.",
+          "start": 149,
+          "end": 197,
+          "polarity": "affirmed",
+          "note": "Monthly price."
+        },
+        {
+          "quote": "The annual fee is $150.00 per year, billed in advance.",
+          "start": 575,
+          "end": 629,
+          "polarity": "affirmed",
+          "note": "Annual fee. Different amount and interval from Section 3."
+        }
+      ]
+    },
+    "cancellation": {
+      "expected_status": "found",
+      "review_needed": true,
+      "passages": [
+        {
+          "quote": "To cancel, give us at least 7 days' notice before your renewal date through the Billing page.",
+          "start": 224,
+          "end": 317,
+          "polarity": "affirmed",
+          "note": "7 days notice, via Billing page."
+        },
+        {
+          "quote": "You must give at least 30 days' written notice to cancel your subscription.",
+          "start": 661,
+          "end": 736,
+          "polarity": "affirmed",
+          "note": "30 days written notice. Differs from Section 4."
+        }
+      ]
+    },
+    "refund": {
+      "expected_status": "found",
+      "review_needed": true,
+      "passages": [
+        {
+          "quote": "All fees are non-refundable.",
+          "start": 344,
+          "end": 372,
+          "polarity": "negated",
+          "note": "No refunds."
+        },
+        {
+          "quote": "If you are not satisfied, you may request a full refund within 14 days of purchase.",
+          "start": 773,
+          "end": 856,
+          "polarity": "affirmed",
+          "note": "Refund within 14 days. Differs from Section 5."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "document": "04-absent.txt",
+  "synthetic": true,
+  "annotated_by": "draft, not yet reviewed by a second person",
+  "purpose": "No subscription terms. Contains keyword distractors that must not produce Found.",
+  "categories": {
+    "trial": {
+      "expected_status": "not_found",
+      "review_needed": false,
+      "passages": []
+    },
+    "renewal": {
+      "expected_status": "not_found",
+      "review_needed": false,
+      "passages": []
+    },
+    "price": {
+      "expected_status": "not_found",
+      "review_needed": false,
+      "passages": []
+    },
+    "cancellation": {
+      "expected_status": "not_found",
+      "review_needed": false,
+      "passages": []
+    },
+    "refund": {
+      "expected_status": "not_found",
+      "review_needed": false,
+      "passages": []
+    }
+  },
+  "distractors": [
+    {
+      "quote": "Renew your password regularly",
+      "category": "renewal",
+      "note": "Password, not a subscription."
+    },
+    {
+      "quote": "You are free to cancel a pending upload",
+      "category": "cancellation",
+      "note": "Upload, not a subscription. \"free\" is not a price or trial."
+    },
+    {
+      "quote": "trial and error",
+      "category": "trial",
+      "note": "Idiom."
+    },
+    {
+      "quote": "The page will refresh periodically",
+      "category": "renewal",
+      "note": "Page refresh, not renewal."
+    }
+  ]
+}
